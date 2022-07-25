@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"path"
 	"runtime"
+
 	"github.com/hyperledger/fabric/msp"
 	"github.com/s7techlab/cckit/identity"
 	"github.com/s7techlab/cckit/testing"

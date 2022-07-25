@@ -1,9 +1,10 @@
-module github.com/CERTH-ITI-DLT-Lab/key-value-chaincode
+module AURORAL-Chaincode
 
 go 1.18
 
 require (
 	github.com/GeorgeGogos/AURORAL-Chaincode v1.1.0
+	github.com/hyperledger/fabric v2.1.1+incompatible
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220720122508-9207360bbddd
 	github.com/hyperledger/fabric-protos-go v0.0.0-20220613214546-bf864f01d75e
 	github.com/onsi/ginkgo v1.16.5
@@ -16,7 +17,6 @@ require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
-	github.com/hyperledger/fabric v1.4.0-rc1.0.20200930182727-344fda602252 // indirect
 	github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a // indirect
 	github.com/miekg/pkcs11 v1.0.3 // indirect
 	github.com/mwitkow/go-proto-validators v0.3.2 // indirect
