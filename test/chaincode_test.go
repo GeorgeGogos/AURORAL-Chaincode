@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/GeorgeGogos/AURORAL-Chaincode/chaincode"
+	chaincode "github.com/GeorgeGogos/AURORAL-Chaincode"
 	"github.com/GeorgeGogos/AURORAL-Chaincode/state"
 	"github.com/GeorgeGogos/AURORAL-Chaincode/testdata"
 	"github.com/hyperledger/fabric-protos-go/peer"
@@ -37,21 +37,14 @@ var _ = Describe(`AuroralChaincode`, func() {
 				ContractId:     "80124570-ae01-49f5-ab04-57b7bba1c66a",
 				ContractType:   "Private",
 				ContractStatus: "Pending",
-				Orgs:           []string{"3f4a58aa-d863-477a-be05-5333324b2f8d", "9c4e0166-b3f9-4f83-9192-7691b86c8b0f"},
-				Items: state.Item{
-					Enabled:    true,
-					Write:      true,
-					ObjectId:   "1c44315e-981c-435d-bedb-4251f7818977",
-					UnitId:     "????????????????",
-					OrgId:      "3f4a58aa-d863-477a-be05-5333324b2f8d",
-					ObjectType: "Device",
-				},
-				LastUpdated: time.Now().Add(time.Hour * 24 * 30 * 6),
-				Created:     time.Now(),
+				Orgs:           "3f4a58aa-d863-477a-be05-5333324b2f8d",
+				Items:          "rfgdsfsedf",
+				LastUpdated:    time.Now().Add(time.Hour * 24 * 30 * 6),
+				Created:        time.Now(),
 			})
 			expectcc.ResponseOk(ccResponse)
 			payloadinserted := expectcc.PayloadIs(ccResponse, &state.ContractState{}).(state.ContractState)
-			fmt.Printf("The Contract State is:%s", string(payloadinserted))
+			fmt.Printf("The Contract State is: %+v", payloadinserted)
 
 			//expectcc.ResponseOk(keyChaincode.From(userID).Invoke(`Insertvalue`, []byte("qwertyuiop[]asdfghjkl;'zxcvbnm,./qwertyuiop[sdfghjkl;xcvbnm,.wertyuioasdfghjklzxcvbnm,.")))
 
