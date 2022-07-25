@@ -1,7 +1,6 @@
 package test
 
 import (
-	"AURORAL-Chaincode/state"
 	"fmt"
 	"testing"
 	"time"

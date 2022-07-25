@@ -9,7 +9,7 @@ import (
 
 func NewCC() *router.Chaincode {
 	logging.InitCCLogger()
-	r := router.New(`contract_state`).Use(logging.SetContextMiddlewareFunc())
+	r := router.New(`auroral_chaincode`).Use(logging.SetContextMiddlewareFunc())
 
 	r.Init(func(context router.Context) (i interface{}, e error) {
 		// No implementation required with this example
