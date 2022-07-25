@@ -2,16 +2,14 @@ package chaincode
 
 import (
 	"github.com/GeorgeGogos/AURORAL-Chaincode/logging"
+	"github.com/GeorgeGogos/AURORAL-Chaincode/state"
 	"github.com/s7techlab/cckit/router"
 	"github.com/s7techlab/cckit/router/param"
 )
 
-const ParamKey = `ParamKey`
-const ParamValue = `ParamValue`
-
 func NewCC() *router.Chaincode {
 	logging.InitCCLogger()
-	r := router.New(`keys`).Use(logging.SetContextMiddlewareFunc())
+	r := router.New(`contract_state`).Use(logging.SetContextMiddlewareFunc())
 
 	r.Init(func(context router.Context) (i interface{}, e error) {
 		// No implementation required with this example
@@ -21,16 +19,33 @@ func NewCC() *router.Chaincode {
 
 	r.
 		// Read methods
-		Query(`List`, List).
+		//Query(`List`, List).
 		// Get method has 2 params
-		Query(`Get`, Get, param.String(ParamKey)).
+		//Query(`Get`, Get, param.String(ParamKey)).
 
 		// Transaction methods
 
-		Invoke(`Insertvalue`, Insertvalue, param.Bytes(ParamValue)).
-		Invoke(`Updatevalue`, Updatevalue, param.String(ParamKey), param.Bytes(ParamValue)).
-		Invoke(`Deletevalue`, Deletevalue, param.String(ParamKey))
+		Invoke(`createcontract`, CreateContract, param.Struct("contractPayload", &state.ContractPayload{}))
+		//Invoke(`Updatevalue`, Updatevalue, param.String(ParamKey), param.Bytes(ParamValue)).
+		//Invoke(`Deletevalue`, Deletevalue, param.String(ParamKey))
 
 	return router.NewChaincode(r)
 
+}
+
+func CreateContract(c router.Context) (interface{}, error) {
+	var (
+		contractPayload = c.Param("contractPayload").(state.ContractPayload) // Assert the chaincode parameter
+		contractState   = &state.ContractState{
+			ContractId:     contractPayload.ContractId,
+			ContractType:   contractPayload.ContractType,
+			ContractStatus: contractPayload.ContractStatus,
+			Orgs:           contractPayload.Orgs,
+			Items:          contractPayload.Items,
+			LastUpdated:    contractPayload.LastUpdated,
+			Created:        contractPayload.Created,
+		}
+	)
+
+	return contractState, c.State().Insert(contractState)
 }
