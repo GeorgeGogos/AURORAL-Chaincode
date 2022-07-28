@@ -24,7 +24,7 @@ func GenerateSelfSignedPEMCertBytes(commonName string) ([]byte, error) {
 	if caPrivateKey == nil {
 		priv, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
 		if err != nil {
-			return nil, fmt.Errorf("Error while generating CA private key: %s", err.Error())
+			return nil, fmt.Errorf("error while generating CA private key: %s", err.Error())
 		}
 		caPrivateKey = priv
 	}
@@ -52,12 +52,12 @@ func GenerateSelfSignedPEMCertBytes(commonName string) ([]byte, error) {
 	certificateDERBytes, err := x509.CreateCertificate(rand.Reader, &certificateTemplate,
 		&certificateTemplate, &caPrivateKey.PublicKey, caPrivateKey)
 	if err != nil {
-		return nil, fmt.Errorf("Error while creating DER-encoded X.509 digital certificate: %s", err.Error())
+		return nil, fmt.Errorf("error while creating DER-encoded X.509 digital certificate: %s", err.Error())
 	}
 	certBuffer := bytes.NewBuffer(nil)
 	err = pem.Encode(certBuffer, &pem.Block{Type: "CERTIFICATE", Bytes: certificateDERBytes})
 	if err != nil {
-		return nil, fmt.Errorf("Error while PEM encoding X.509 digital certificate: %s", err.Error())
+		return nil, fmt.Errorf("error while PEM encoding X.509 digital certificate: %s", err.Error())
 	}
 	return certBuffer.Bytes(), nil
 }

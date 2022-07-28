@@ -1,55 +1,69 @@
 package test
 
 import (
+	chaincode "AURORAL-Chaincode"
+	"AURORAL-Chaincode/state"
 	"fmt"
 	"testing"
 	"time"
 
-	chaincode "AURORAL-Chaincode"
-	"AURORAL-Chaincode/state"
-	"AURORAL-Chaincode/testdata"
-
-	"github.com/hyperledger/fabric-protos-go/peer"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/s7techlab/cckit/identity/testdata"
 	testcc "github.com/s7techlab/cckit/testing"
 	expectcc "github.com/s7techlab/cckit/testing/expect"
 )
 
-func TestKeyValue(t *testing.T) {
+func TestChaincode(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Chaincode Suite")
+	RunSpecs(t, "AURORAL Suite")
 }
 
-var _ = Describe(`AuroralChaincode`, func() {
+var (
+	Authority = testdata.Certificates[0].MustIdentity(`SOME_MSP`)
+	Someone   = testdata.Certificates[1].MustIdentity(`SOME_MSP`)
+)
 
-	Describe("Chaincode lifecycle", func() {
-		auroralChaincode := testcc.NewMockStub(`auroral_chaincode`, chaincode.NewCC())
-		userCN := "govadmin1@example.com"
-		userID, _ := GenerateCertIdentity(testdata.DefaultMSP, userCN)
-		var ccResponse peer.Response
-		var payloadinserted state.ContractState
-		BeforeSuite(func() {
-			expectcc.ResponseOk(auroralChaincode.From(userID).Init())
-		})
+var _ = Describe(`Chaincode`, func() {
 
-		It("Allow Orgs to create a new contract", func() {
+	//Create chaincode mock
+	cc := testcc.NewMockStub(`auroral_chaincode`, chaincode.NewCC())
+
+	BeforeSuite(func() {
+		// init chaincode
+		expectcc.ResponseOk(cc.From(Authority).Init()) // init chaincode from authority
+	})
+
+	Describe("Create", func() {
+
+		It("Allow authority to add information about car", func() {
 			//invoke chaincode method from authority actor
-			ccResponse = auroralChaincode.From(userID).Invoke(`createcontract`, &state.ContractPayload{
+			v := expectcc.ResponseOk(cc.From(Authority).Invoke(`CreateContract`, &state.ContractPayload{
 				ContractId:     "80124570-ae01-49f5-ab04-57b7bba1c66a",
 				ContractType:   "Private",
 				ContractStatus: "Pending",
 				Orgs:           "3f4a58aa-d863-477a-be05-5333324b2f8d",
-				Items:          "rfgdsfsedf",
-				LastUpdated:    time.Now().Add(time.Hour * 24 * 30 * 6),
-				Created:        time.Now(),
-			})
-			expectcc.ResponseOk(ccResponse)
-			payloadinserted = expectcc.PayloadIs(ccResponse, &state.ContractState{}).(state.ContractState)
-			fmt.Printf("The Contract State is: %+v", payloadinserted)
-
-			//expectcc.ResponseOk(keyChaincode.From(userID).Invoke(`Insertvalue`, []byte("qwertyuiop[]asdfghjkl;'zxcvbnm,./qwertyuiop[sdfghjkl;xcvbnm,.wertyuioasdfghjklzxcvbnm,.")))
-
+				Items: []state.Item{{
+					Enabled:    true,
+					Write:      true,
+					ObjectId:   "64c2e5d9-4829-4602-8c8d-2d26e8d00df0",
+					UnitId:     "????????????????",
+					OrgId:      "9c4e0166-b3f9-4f83-9192-7691b86c8b0f",
+					ObjectType: "Service",
+				},
+					{
+						Enabled:    true,
+						Write:      false,
+						ObjectId:   "1c44315e-981c-435d-bedb-4251f7818977",
+						UnitId:     "????????????????",
+						OrgId:      "3f4a58aa-d863-477a-be05-5333324b2f8d",
+						ObjectType: "Device",
+					}},
+				LastUpdated: time.Now().Add(time.Hour * 24 * 30 * 6),
+				Created:     time.Now(),
+			}))
+			fmt.Print(v)
 		})
 
 	})

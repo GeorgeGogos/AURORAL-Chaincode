@@ -26,7 +26,7 @@ func NewCC() *router.Chaincode {
 
 		// Transaction methods
 
-		Invoke(`createcontract`, CreateContract, param.Struct("contractPayload", &state.ContractPayload{}))
+		Invoke(`CreateContract`, CreateContract, param.Struct(`contractPayload`, &state.ContractPayload{}))
 		//Invoke(`Updatevalue`, Updatevalue, param.String(ParamKey), param.Bytes(ParamValue)).
 		//Invoke(`Deletevalue`, Deletevalue, param.String(ParamKey))
 
@@ -47,6 +47,7 @@ func CreateContract(c router.Context) (interface{}, error) {
 			Created:        contractPayload.Created,
 		}
 	)
-
-	return contractState, c.State().Insert(contractState)
+	logging.CCLoggerInstance.Println("CreateContract function invokes chaincode")
+	logging.CCLoggerInstance.Println(contractState)
+	return c.State().Insert(contractState), nil
 }
