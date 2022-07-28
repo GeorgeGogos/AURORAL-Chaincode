@@ -10,7 +10,6 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/s7techlab/cckit/identity/testdata"
 	testcc "github.com/s7techlab/cckit/testing"
 	expectcc "github.com/s7techlab/cckit/testing/expect"
 )
@@ -21,8 +20,8 @@ func TestChaincode(t *testing.T) {
 }
 
 var (
-	Authority = testdata.Certificates[0].MustIdentity(`SOME_MSP`)
-	Someone   = testdata.Certificates[1].MustIdentity(`SOME_MSP`)
+	userCN    = "ggogos@iti.gr"
+	userID, _ = GenerateCertIdentity(`SomeMSP`, userCN)
 )
 
 var _ = Describe(`Chaincode`, func() {
@@ -32,14 +31,14 @@ var _ = Describe(`Chaincode`, func() {
 
 	BeforeSuite(func() {
 		// init chaincode
-		expectcc.ResponseOk(cc.From(Authority).Init()) // init chaincode from authority
+		expectcc.ResponseOk(cc.From(userID).Init()) // init chaincode from authority
 	})
 
 	Describe("Create", func() {
 
 		It("Allow authority to add information about car", func() {
 			//invoke chaincode method from authority actor
-			v := expectcc.ResponseOk(cc.From(Authority).Invoke(`CreateContract`, &state.ContractPayload{
+			v := expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &state.ContractPayload{
 				ContractId:     "80124570-ae01-49f5-ab04-57b7bba1c66a",
 				ContractType:   "Private",
 				ContractStatus: "Pending",
