@@ -1,8 +1,9 @@
 package chaincode
 
 import (
-	"AURORAL-Chaincode/logging"
-	"AURORAL-Chaincode/state"
+	"github.com/GeorgeGogos/AURORAL-Chaincode/state"
+
+	"github.com/GeorgeGogos/AURORAL-Chaincode/logging"
 
 	"github.com/s7techlab/cckit/router"
 	"github.com/s7techlab/cckit/router/param"

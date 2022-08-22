@@ -1,11 +1,12 @@
 package test
 
 import (
-	chaincode "AURORAL-Chaincode"
-	"AURORAL-Chaincode/state"
 	"fmt"
 	"testing"
 	"time"
+
+	chaincode "github.com/GeorgeGogos/AURORAL-Chaincode"
+	"github.com/GeorgeGogos/AURORAL-Chaincode/state"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
