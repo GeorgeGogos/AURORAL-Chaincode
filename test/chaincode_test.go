@@ -1,12 +1,12 @@
 package test
 
 import (
-	"fmt"
 	"testing"
 	"time"
 
-	chaincode "github.com/GeorgeGogos/AURORAL-Chaincode"
-	"github.com/GeorgeGogos/AURORAL-Chaincode/state"
+	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
+
+	auroral "github.com/GeorgeGogos/AURORAL-Chaincode"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,7 +28,7 @@ var (
 var _ = Describe(`Chaincode`, func() {
 
 	//Create chaincode mock
-	cc := testcc.NewMockStub(`auroral_chaincode`, chaincode.NewCC())
+	cc := testcc.NewMockStub(`auroral_chaincode`, auroral.NewCC())
 
 	BeforeSuite(func() {
 		// init chaincode
@@ -37,14 +37,14 @@ var _ = Describe(`Chaincode`, func() {
 
 	Describe("Create", func() {
 
-		It("Allow authority to add information about car", func() {
+		It("Allow authority to add information about contract", func() {
 			//invoke chaincode method from authority actor
-			v := expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &state.ContractPayload{
+			expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
 				ContractId:     "80124570-ae01-49f5-ab04-57b7bba1c66a",
 				ContractType:   "Private",
 				ContractStatus: "Pending",
-				Orgs:           "3f4a58aa-d863-477a-be05-5333324b2f8d",
-				Items: []state.Item{{
+				Orgs:           [2]string{"3f4a58aa-d863-477a-be05-5333324b2f8d", "5f4a58aa-d863-477a-be05-4856793b2f8d"},
+				Items: []payload.Item{{
 					Enabled:    true,
 					Write:      true,
 					ObjectId:   "64c2e5d9-4829-4602-8c8d-2d26e8d00df0",
@@ -63,7 +63,7 @@ var _ = Describe(`Chaincode`, func() {
 				LastUpdated: time.Now().Add(time.Hour * 24 * 30 * 6),
 				Created:     time.Now(),
 			}))
-			fmt.Print(v)
+
 		})
 
 	})
