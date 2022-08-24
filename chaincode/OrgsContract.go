@@ -7,6 +7,8 @@ import (
 
 	"github.com/GeorgeGogos/AURORAL-Chaincode/logging"
 
+	"fmt"
+
 	"github.com/s7techlab/cckit/router"
 )
 
@@ -24,7 +26,11 @@ func CreateContract(c router.Context) (interface{}, error) {
 		}
 	)
 	logging.CCLoggerInstance.Printf("CreateContract function invokes chaincode. Output: %v\n", contractState)
-	result := c.State().Insert(contractState)
-	logging.CCLoggerInstance.Printf("Ledger state: %s\n", result)
+	if err := c.State().Insert(contractState); err != nil {
+		retErr := fmt.Errorf("error while attempting to insert Contract info to state: %s", err)
+		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+		return nil, err
+	}
+	logging.CCLoggerInstance.Printf("Successfully initialized Account chaincode!")
 	return nil, nil
 }

@@ -1,10 +1,13 @@
 package state
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
 )
+
+const ContractStateEntity = `ContractState`
 
 type ContractState struct {
 	ContractId     string         `json:"contract_id,omitempty"`
@@ -16,4 +19,11 @@ type ContractState struct {
 	Created        time.Time      `json:"created,omitempty"`
 }
 
-const ContractStateEntity = `ContractState`
+func (s ContractState) Key() ([]string, error) {
+	return []string{ContractStateEntity, s.ContractId}, nil
+}
+
+func (s ContractState) String() string {
+	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%v, LastUpdated=%s, Created=%s)",
+		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, s.Items, s.LastUpdated.String(), s.Created.String())
+}

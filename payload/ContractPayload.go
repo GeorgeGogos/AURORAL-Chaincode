@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -21,4 +22,14 @@ type ContractPayload struct {
 	Items          []Item    `json:"items,omitempty"`
 	LastUpdated    time.Time `json:"last_updated,omitempty"`
 	Created        time.Time `json:"created,omitempty"`
+}
+
+func (i Item) String() string {
+	return fmt.Sprintf("Enabled=%v, Write=%v, ObjectId=%s, UnitId=%s, OrgId=%s, ObjectType=%s)",
+		i.Enabled, i.Write, i.ObjectId, i.UnitId, i.OrgId, i.ObjectType)
+}
+
+func (p ContractPayload) String() string {
+	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%v, LastUpdated=%s, Created=%s)",
+		p.ContractId, p.ContractType, p.ContractStatus, p.Orgs, p.Items, p.LastUpdated.String(), p.Created.String())
 }
