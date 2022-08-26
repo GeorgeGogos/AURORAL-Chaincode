@@ -24,6 +24,6 @@ func (s ContractState) Key() ([]string, error) {
 }
 
 func (s ContractState) String() string {
-	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%v, LastUpdated=%s, Created=%s)",
-		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, s.Items, s.LastUpdated.String(), s.Created.String())
+	return fmt.Sprintf("ContractId=%#v, ContractType=%#v, ContractStatus=%#v, Orgs=%#v, Items=%#v, LastUpdated=%#v, Created=%#v",
+		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, s.Items, s.LastUpdated, s.Created)
 }

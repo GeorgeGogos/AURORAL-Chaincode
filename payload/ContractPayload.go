@@ -5,15 +5,6 @@ import (
 	"time"
 )
 
-type Item struct {
-	Enabled    bool   `json:"enabled,omitempty"`
-	Write      bool   `json:"write,omitempty"`
-	ObjectId   string `json:"object_id,omitempty"`
-	UnitId     string `json:"unit_id,omitempty"`
-	OrgId      string `json:"org_id,omitempty"`
-	ObjectType string `json:"object_type,omitempty"`
-}
-
 type ContractPayload struct {
 	ContractId     string    `json:"contract_id,omitempty"`
 	ContractType   string    `json:"contract_type,omitempty"`
@@ -24,12 +15,7 @@ type ContractPayload struct {
 	Created        time.Time `json:"created,omitempty"`
 }
 
-func (i Item) String() string {
-	return fmt.Sprintf("Enabled=%v, Write=%v, ObjectId=%s, UnitId=%s, OrgId=%s, ObjectType=%s)",
-		i.Enabled, i.Write, i.ObjectId, i.UnitId, i.OrgId, i.ObjectType)
-}
-
 func (p ContractPayload) String() string {
-	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%v, LastUpdated=%s, Created=%s)",
+	return fmt.Sprintf("ContractId=%#v, ContractType=%#v, ContractStatus=%#v, Orgs=%#v, Items=%#v, LastUpdated=%#v, Created=%#v",
 		p.ContractId, p.ContractType, p.ContractStatus, p.Orgs, p.Items, p.LastUpdated.String(), p.Created.String())
 }

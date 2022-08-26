@@ -25,12 +25,12 @@ func CreateContract(c router.Context) (interface{}, error) {
 			Created:        contractPayload.Created,
 		}
 	)
-	logging.CCLoggerInstance.Printf("CreateContract function invokes chaincode. Output: %v\n", contractState)
+	logging.CCLoggerInstance.Printf("CreateContract function invokes chaincode. Output: %s\n", contractState.String())
 	if err := c.State().Insert(contractState); err != nil {
 		retErr := fmt.Errorf("error while attempting to insert Contract info to state: %s", err)
 		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 		return nil, err
 	}
-	logging.CCLoggerInstance.Printf("Successfully initialized Account chaincode!")
+
 	return nil, nil
 }
