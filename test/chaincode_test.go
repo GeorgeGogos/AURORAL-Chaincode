@@ -45,8 +45,8 @@ var _ = Describe(`Chaincode`, func() {
 			rand.Seed(time.Now().Unix())
 			expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
 				ContractId:     uuid.New().String(),
-				ContractType:   payload.contractType[rand.Intn(len(payload.contractType))],
-				ContractStatus: payload.contractStatus[rand.Intn(len(payload.contractStatus))],
+				ContractType:   "Private",
+				ContractStatus: "Pending",
 				Orgs:           []string{uuid.New().String(), uuid.New().String()},
 				Items: []payload.Item{{
 					Enabled:    null.BoolFrom(true),
@@ -54,7 +54,7 @@ var _ = Describe(`Chaincode`, func() {
 					ObjectId:   uuid.New().String(),
 					UnitId:     uuid.New().String(),
 					OrgId:      uuid.New().String(),
-					ObjectType: payload.objectType[rand.Intn(len(payload.objectType))],
+					ObjectType: "Service",
 				},
 					{
 						Enabled:    null.BoolFrom(true),

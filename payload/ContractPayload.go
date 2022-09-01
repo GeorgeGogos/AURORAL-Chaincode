@@ -4,13 +4,6 @@ import (
 	"fmt"
 )
 
-var (
-	contractType   = []string{"Private", "Community"}
-	contractStatus = []string{"Pending", "Approved", "Deleted"}
-	_              = contractStatus
-	_              = contractType
-)
-
 type ContractPayload struct {
 	ContractId     string   `json:"contract_id"`
 	ContractType   string   `json:"contract_type"`
@@ -28,10 +21,10 @@ func (p ContractPayload) Validate() error {
 	if p.ContractId == "" {
 		return fmt.Errorf("Error validating Contract payload: contract ID cannot be an empty string.")
 	}
-	if p.ContractType == "" || p.ContractType != "Private" || p.ContractType != "Community" {
+	if p.ContractType == "" || (p.ContractType != "Private" && p.ContractType != "Community") {
 		return fmt.Errorf("Error validating Contract payload: contract type cannot be an empty string.")
 	}
-	if p.ContractStatus == "" || p.ContractStatus != "Pending" || p.ContractStatus != "Approved" || p.ContractStatus != "Deleted" {
+	if p.ContractStatus == "" || (p.ContractStatus != "Pending" && p.ContractStatus != "Approved" && p.ContractStatus != "Deleted") {
 		return fmt.Errorf("Error validating Contract payload: contract status cannot be an empty string.")
 	}
 	if len(p.Orgs) != 2 {

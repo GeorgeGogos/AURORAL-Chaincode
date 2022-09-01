@@ -15,9 +15,6 @@ type Item struct {
 	ObjectType string    `json:"object_type"`
 }
 
-var objectType = []string{"Service", "Device", "Marketplace"}
-var _ = objectType
-
 func (i Item) String() string {
 	return fmt.Sprintf("Enabled=%v, Write=%#v, ObjectId=%#v, UnitId=%#v, OrgId=%#v, ObjectType=%#v)",
 		i.Enabled, i.Write, i.ObjectId, i.UnitId, i.OrgId, i.ObjectType)
@@ -39,7 +36,7 @@ func (i Item) Validate() error {
 	if i.OrgId == "" {
 		return fmt.Errorf("Error validating Item: org ID cannot be an empty string.")
 	}
-	if i.ObjectType == "" || i.ObjectType != "Service" || i.ObjectType != "Device" || i.ObjectType != "Marketplace" {
+	if i.ObjectType == "" || (i.ObjectType != "Service" && i.ObjectType != "Device" && i.ObjectType != "Marketplace") {
 		return fmt.Errorf("Error validating Item: object type cannot be an empty string.")
 	}
 	return nil
