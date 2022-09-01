@@ -4,13 +4,16 @@ import (
 	"testing"
 	"time"
 
+	"gopkg.in/guregu/null.v4"
+
 	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
 
-	auroral "github.com/GeorgeGogos/AURORAL-Chaincode"
+	"math/rand"
 
+	auroral "github.com/GeorgeGogos/AURORAL-Chaincode"
+	"github.com/google/uuid"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
 	testcc "github.com/s7techlab/cckit/testing"
 	expectcc "github.com/s7techlab/cckit/testing/expect"
 )
@@ -39,29 +42,28 @@ var _ = Describe(`Chaincode`, func() {
 
 		It("Allow authority to add information about contract", func() {
 			//invoke chaincode method from authority actor
+			rand.Seed(time.Now().Unix())
 			expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
-				ContractId:     "80124570-ae01-49f5-ab04-57b7bba1c66a",
-				ContractType:   "Private",
-				ContractStatus: "Pending",
-				Orgs:           [2]string{"3f4a58aa-d863-477a-be05-5333324b2f8d", "5f4a58aa-d863-477a-be05-4856793b2f8d"},
+				ContractId:     uuid.New().String(),
+				ContractType:   payload.contractType[rand.Intn(len(payload.contractType))],
+				ContractStatus: payload.contractStatus[rand.Intn(len(payload.contractStatus))],
+				Orgs:           []string{uuid.New().String(), uuid.New().String()},
 				Items: []payload.Item{{
-					Enabled:    true,
-					Write:      true,
-					ObjectId:   "64c2e5d9-4829-4602-8c8d-2d26e8d00df0",
-					UnitId:     "????????????????",
-					OrgId:      "9c4e0166-b3f9-4f83-9192-7691b86c8b0f",
-					ObjectType: "Service",
+					Enabled:    null.BoolFrom(true),
+					Write:      null.BoolFrom(true),
+					ObjectId:   uuid.New().String(),
+					UnitId:     uuid.New().String(),
+					OrgId:      uuid.New().String(),
+					ObjectType: payload.objectType[rand.Intn(len(payload.objectType))],
 				},
 					{
-						Enabled:    true,
-						Write:      false,
-						ObjectId:   "1c44315e-981c-435d-bedb-4251f7818977",
-						UnitId:     "????????????????",
-						OrgId:      "3f4a58aa-d863-477a-be05-5333324b2f8d",
+						Enabled:    null.BoolFrom(true),
+						Write:      null.BoolFrom(false),
+						ObjectId:   uuid.New().String(),
+						UnitId:     uuid.New().String(),
+						OrgId:      uuid.New().String(),
 						ObjectType: "Device",
 					}},
-				LastUpdated: time.Now().Add(time.Hour * 24 * 30 * 6),
-				Created:     time.Now(),
 			}))
 
 		})

@@ -3,10 +3,12 @@ module github.com/GeorgeGogos/AURORAL-Chaincode
 go 1.18
 
 require (
+	github.com/google/uuid v1.1.2
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220720122508-9207360bbddd
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.0
 	github.com/s7techlab/cckit v0.10.5
+	gopkg.in/guregu/null.v4 v4.0.0
 )
 
 require (
