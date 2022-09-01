@@ -24,8 +24,11 @@ func TestChaincode(t *testing.T) {
 }
 
 var (
-	userCN    = "ggogos@iti.gr"
-	userID, _ = GenerateCertIdentity(`SomeMSP`, userCN)
+	userCN          = "ggogos@iti.gr"
+	userID, _       = GenerateCertIdentity(`SomeMSP`, userCN)
+	Object_Type     = []string{"Service", "Device", "Marketplace"}
+	Contract_Type   = []string{"Private", "Community"}
+	Contract_Status = []string{"Pending", "Approved", "Deleted"}
 )
 
 var _ = Describe(`Chaincode`, func() {
@@ -45,8 +48,8 @@ var _ = Describe(`Chaincode`, func() {
 			rand.Seed(time.Now().Unix())
 			expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
 				ContractId:     uuid.New().String(),
-				ContractType:   "Private",
-				ContractStatus: "Pending",
+				ContractType:   Contract_Type[rand.Intn(len(Contract_Type))],
+				ContractStatus: Contract_Status[rand.Intn(len(Contract_Status))],
 				Orgs:           []string{uuid.New().String(), uuid.New().String()},
 				Items: []payload.Item{{
 					Enabled:    null.BoolFrom(true),
@@ -54,7 +57,7 @@ var _ = Describe(`Chaincode`, func() {
 					ObjectId:   uuid.New().String(),
 					UnitId:     uuid.New().String(),
 					OrgId:      uuid.New().String(),
-					ObjectType: "Service",
+					ObjectType: Object_Type[rand.Intn(len(Object_Type))],
 				},
 					{
 						Enabled:    null.BoolFrom(true),
@@ -62,7 +65,7 @@ var _ = Describe(`Chaincode`, func() {
 						ObjectId:   uuid.New().String(),
 						UnitId:     uuid.New().String(),
 						OrgId:      uuid.New().String(),
-						ObjectType: "Device",
+						ObjectType: Object_Type[rand.Intn(len(Object_Type))],
 					}},
 			}))
 
