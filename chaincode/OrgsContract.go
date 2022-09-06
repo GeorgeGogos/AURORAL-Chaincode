@@ -1,14 +1,15 @@
 package chaincode
 
 import (
+	"hlf-cc-nft-chaincode/models/state"
+
 	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
 
 	"github.com/GeorgeGogos/AURORAL-Chaincode/state"
 
-	"github.com/GeorgeGogos/AURORAL-Chaincode/logging"
-
 	"fmt"
-	"time"
+
+	logging "github.com/CERTH-ITI-DLT-Lab/hlf-cc-logging"
 
 	"github.com/s7techlab/cckit/router"
 )
@@ -30,24 +31,13 @@ func CreateContract(c router.Context) (interface{}, error) {
 			return nil, retErr
 		}
 	}
-
-	contractState := state.ContractState{
-		ContractId:     contractPayload.ContractId,
-		ContractType:   contractPayload.ContractType,
-		ContractStatus: contractPayload.ContractStatus,
-		Orgs:           contractPayload.Orgs,
-		Items:          contractPayload.Items,
-		LastUpdated:    time.Now(),
-		Created:        time.Now(),
-	}
-
-	logging.CCLoggerInstance.Printf("CreateContract function invokes chaincode. Quoted Output: %s\n", contractState.String())
-
-	if err := c.State().Insert(contractState); err != nil {
-		retErr := fmt.Errorf("Error while attempting to insert Contract info to state: %s", err)
+	stateStub := state.NewStateStub(c)
+	if err := stateStub.NewContract(contractPayload); err != nil {
+		retErr := fmt.Errorf("Error: CreateContract returned error: %s", err.Error())
 		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
-		return nil, err
+		return nil, retErr
 	}
+	//logging.CCLoggerInstance.Printf("CreateContract function invokes chaincode. Quoted Output: %s\n", contractState.String())
 
 	return nil, nil
 }

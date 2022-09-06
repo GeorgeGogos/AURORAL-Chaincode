@@ -3,10 +3,11 @@ module github.com/GeorgeGogos/AURORAL-Chaincode
 go 1.18
 
 require (
-	github.com/google/uuid v1.1.2
+	github.com/CERTH-ITI-DLT-Lab/hlf-cc-logging v1.0.0
+	github.com/google/uuid v1.3.0
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220720122508-9207360bbddd
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.20.0
+	github.com/onsi/gomega v1.20.2
 	github.com/s7techlab/cckit v0.10.5
 	gopkg.in/guregu/null.v4 v4.0.0
 )
@@ -29,8 +30,8 @@ require (
 	go.uber.org/multierr v1.5.0 // indirect
 	go.uber.org/zap v1.14.1 // indirect
 	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9 // indirect
-	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+	golang.org/x/net v0.0.0-20220722155237-a158d28d115b // indirect
+	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/genproto v0.0.0-20220718134204-073382fd740c // indirect
 	google.golang.org/grpc v1.48.0 // indirect

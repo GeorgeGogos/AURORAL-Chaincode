@@ -4,7 +4,7 @@ import (
 	"github.com/GeorgeGogos/AURORAL-Chaincode/chaincode"
 	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
 
-	"github.com/GeorgeGogos/AURORAL-Chaincode/logging"
+	logging "github.com/CERTH-ITI-DLT-Lab/hlf-cc-logging"
 
 	"github.com/s7techlab/cckit/router"
 	"github.com/s7techlab/cckit/router/param"

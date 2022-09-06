@@ -14,7 +14,7 @@ type ContractState struct {
 	ContractType   string         `json:"contract_type"`
 	ContractStatus string         `json:"contract_status"`
 	Orgs           []string       `json:"orgs"`
-	Items          []payload.Item `json:"items"`
+	Items          []payload.Item `json:"items,omitempty"`
 	LastUpdated    time.Time      `json:"last_updated"`
 	Created        time.Time      `json:"created"`
 }
