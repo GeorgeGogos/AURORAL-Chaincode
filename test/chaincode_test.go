@@ -4,8 +4,6 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/guregu/null.v4"
-
 	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
 
 	"math/rand"
@@ -23,9 +21,20 @@ func TestChaincode(t *testing.T) {
 	RunSpecs(t, "AURORAL Suite")
 }
 
+func randomOrgs() (string, string) {
+	rand.Seed(time.Now().Unix())
+	org1 := uuid.New().String()
+	org2 := uuid.New().String()
+	return org1, org2
+}
+
 var (
 	userCN          = "ggogos@iti.gr"
-	userID, _       = GenerateCertIdentity(`SomeMSP`, userCN)
+	org1, org2      = randomOrgs()
+	randOrgs        = []string{org1, org2, "False Input"}
+	userID, _       = GenerateCertIdentity(`SomeMSP`, userCN, randOrgs[rand.Intn(len(randOrgs))])
+	t               = true
+	f               = false
 	Object_Type     = []string{"Service", "Device", "Marketplace"}
 	Contract_Type   = []string{"Private", "Community"}
 	Contract_Status = []string{"Pending", "Approved", "Deleted"}
@@ -45,26 +54,26 @@ var _ = Describe(`Chaincode`, func() {
 
 		It("Allow authority to add information about contract", func() {
 			//invoke chaincode method from authority actor
-			rand.Seed(time.Now().Unix())
+
 			expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
 				ContractId:     uuid.New().String(),
 				ContractType:   Contract_Type[rand.Intn(len(Contract_Type))],
 				ContractStatus: Contract_Status[rand.Intn(len(Contract_Status))],
-				Orgs:           []string{uuid.New().String(), uuid.New().String()},
+				Orgs:           []string{randOrgs[0], randOrgs[1]},
 				Items: []payload.Item{{
-					Enabled:    null.BoolFrom(true),
-					Write:      null.BoolFrom(true),
+					Enabled:    &t,
+					Write:      &t,
 					ObjectId:   uuid.New().String(),
 					UnitId:     uuid.New().String(),
-					OrgId:      uuid.New().String(),
+					OrgId:      randOrgs[rand.Intn(len(randOrgs))],
 					ObjectType: Object_Type[rand.Intn(len(Object_Type))],
 				},
 					{
-						Enabled:    null.BoolFrom(true),
-						Write:      null.BoolFrom(false),
+						Enabled:    &t,
+						Write:      &f,
 						ObjectId:   uuid.New().String(),
 						UnitId:     uuid.New().String(),
-						OrgId:      uuid.New().String(),
+						OrgId:      randOrgs[rand.Intn(len(randOrgs))],
 						ObjectType: Object_Type[rand.Intn(len(Object_Type))],
 					}},
 			}))

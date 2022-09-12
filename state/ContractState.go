@@ -1,8 +1,8 @@
 package state
 
 import (
+	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
 )
@@ -15,8 +15,8 @@ type ContractState struct {
 	ContractStatus string         `json:"contract_status"`
 	Orgs           []string       `json:"orgs"`
 	Items          []payload.Item `json:"items,omitempty"`
-	LastUpdated    time.Time      `json:"last_updated"`
-	Created        time.Time      `json:"created"`
+	LastUpdated    string         `json:"last_updated"`
+	Created        string         `json:"created"`
 }
 
 func (s ContractState) Key() ([]string, error) {
@@ -24,6 +24,7 @@ func (s ContractState) Key() ([]string, error) {
 }
 
 func (s ContractState) String() string {
-	return fmt.Sprintf("ContractId=%#v, ContractType=%#v, ContractStatus=%#v, Orgs=%#v, Items=%#v, LastUpdated=%s, Created=%s",
-		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, s.Items, s.LastUpdated.String(), s.Created.String())
+	marshaledItem, _ := json.Marshal(s.Items)
+	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s, LastUpdated=%s, Created=%s",
+		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, marshaledItem, s.LastUpdated, s.Created)
 }

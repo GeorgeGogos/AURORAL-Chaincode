@@ -1,8 +1,6 @@
 package chaincode
 
 import (
-	"hlf-cc-nft-chaincode/models/state"
-
 	"github.com/GeorgeGogos/AURORAL-Chaincode/payload"
 
 	"github.com/GeorgeGogos/AURORAL-Chaincode/state"
@@ -25,19 +23,25 @@ func CreateContract(c router.Context) (interface{}, error) {
 	}
 
 	for i := 0; i < len(contractPayload.Items); i++ {
-		if err := contractPayload.Items[i].Validate(); err != nil {
+		if err := contractPayload.Items[i].Validate(contractPayload); err != nil {
 			retErr := fmt.Errorf("Error: Validate() returned error: %s", err.Error())
 			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 			return nil, retErr
 		}
 	}
+
+	logging.CCLoggerInstance.Printf("Checking ACL rules\n")
+	if owner := onlyContractOrgs(c); owner != string(contractPayload.Orgs[0]) && owner != string(contractPayload.Orgs[1]) {
+		retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL")
+		return nil, retErr
+	}
+
 	stateStub := state.NewStateStub(c)
 	if err := stateStub.NewContract(contractPayload); err != nil {
 		retErr := fmt.Errorf("Error: CreateContract returned error: %s", err.Error())
 		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 		return nil, retErr
 	}
-	//logging.CCLoggerInstance.Printf("CreateContract function invokes chaincode. Quoted Output: %s\n", contractState.String())
 
 	return nil, nil
 }

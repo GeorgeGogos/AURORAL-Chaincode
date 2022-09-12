@@ -20,7 +20,7 @@ var (
 	caPrivateKey *ecdsa.PrivateKey
 )
 
-func GenerateSelfSignedPEMCertBytes(commonName string) ([]byte, error) {
+func GenerateSelfSignedPEMCertBytes(commonName, orgID string) ([]byte, error) {
 	if caPrivateKey == nil {
 		priv, err := ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
 		if err != nil {
@@ -39,6 +39,7 @@ func GenerateSelfSignedPEMCertBytes(commonName string) ([]byte, error) {
 		Subject: pkix.Name{
 			Organization: []string{"Acme Co"},
 			CommonName:   commonName,
+			SerialNumber: orgID,
 		},
 		NotBefore: notBefore,
 		NotAfter:  notAfter,
@@ -62,10 +63,11 @@ func GenerateSelfSignedPEMCertBytes(commonName string) ([]byte, error) {
 	return certBuffer.Bytes(), nil
 }
 
-func GenerateCertIdentity(mspID, commonName string) (*identity.CertIdentity, error) {
-	certPEMBytes, err := GenerateSelfSignedPEMCertBytes(commonName)
+func GenerateCertIdentity(mspID, commonName, orgID string) (*identity.CertIdentity, error) {
+	certPEMBytes, err := GenerateSelfSignedPEMCertBytes(commonName, orgID)
 	if err != nil {
 		return nil, err
 	}
+	fmt.Print(string(certPEMBytes))
 	return identity.New(mspID, certPEMBytes)
 }

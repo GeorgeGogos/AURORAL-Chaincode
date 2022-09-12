@@ -1,6 +1,7 @@
 package payload
 
 import (
+	"encoding/json"
 	"fmt"
 )
 
@@ -11,21 +12,23 @@ type ContractPayload struct {
 	Orgs           []string `json:"orgs"`
 	Items          []Item   `json:"items,omitempty"`
 }
+type ContractPayloadAllias ContractPayload
 
 func (p ContractPayload) String() string {
-	return fmt.Sprintf("ContractId=%#v, ContractType=%#v, ContractStatus=%#v, Orgs=%#v, Items=%#v",
-		p.ContractId, p.ContractType, p.ContractStatus, p.Orgs, p.Items)
+	marshaledItem, _ := json.Marshal(p.Items)
+	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s",
+		p.ContractId, p.ContractType, p.ContractStatus, p.Orgs, string(marshaledItem))
 }
 
 func (p ContractPayload) Validate() error {
 	if p.ContractId == "" {
-		return fmt.Errorf("Error validating Contract payload: contract ID cannot be an empty string.")
+		return fmt.Errorf("Error validating Contract payload: ContractID cannot be an empty string.")
 	}
 	if p.ContractType == "" || (p.ContractType != "Private" && p.ContractType != "Community") {
-		return fmt.Errorf("Error validating Contract payload: contract type cannot be an empty string.")
+		return fmt.Errorf("Error validating Contract payload: ContractType cannot be an empty string.")
 	}
 	if p.ContractStatus == "" || (p.ContractStatus != "Pending" && p.ContractStatus != "Approved" && p.ContractStatus != "Deleted") {
-		return fmt.Errorf("Error validating Contract payload: contract status cannot be an empty string.")
+		return fmt.Errorf("Error validating Contract payload: ContractStatus cannot be an empty string.")
 	}
 	if len(p.Orgs) != 2 {
 		return fmt.Errorf("Error validating Contract payload: contracted Orgs must be two (2).")

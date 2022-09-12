@@ -19,18 +19,21 @@ func NewStateStub(c router.Context) *StateStub {
 	}
 }
 
-func (s StateStub) NewContract(payload payload.ContractPayload) *ContractState {
+func (s StateStub) NewContract(payload payload.ContractPayload) error {
+	txTime, _ := s.context.Time()
 	contractState := &ContractState{
 		ContractId:     payload.ContractId,
 		ContractType:   payload.ContractType,
 		ContractStatus: payload.ContractStatus,
 		Orgs:           payload.Orgs,
 		Items:          payload.Items,
-		LastUpdated:    time.Now(),
-		Created:        time.Now(),
+		LastUpdated:    txTime.UTC().Format(time.RFC3339),
+		Created:        txTime.UTC().Format(time.RFC3339),
 	}
+	fmt.Printf("%s\n", contractState.String())
 	if err := s.context.State().Insert(contractState); err != nil {
-		return fmt.Errorf("Error: Insert() returned error: %s", err.Error())
+		retErr := fmt.Errorf("Error: Insert() returned error: %s", err.Error())
+		return retErr
 	}
 	return nil
 }
