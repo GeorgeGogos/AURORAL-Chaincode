@@ -29,15 +29,16 @@ func randomOrgs() (string, string) {
 }
 
 var (
-	userCN          = "ggogos@iti.gr"
-	org1, org2      = randomOrgs()
-	randOrgs        = []string{org1, org2, "False Input"}
-	userID, _       = GenerateCertIdentity(`SomeMSP`, userCN, randOrgs[rand.Intn(len(randOrgs))])
-	t               = true
-	f               = false
-	Object_Type     = []string{"Service", "Device", "Marketplace"}
-	Contract_Type   = []string{"Private", "Community"}
-	Contract_Status = []string{"Pending", "Approved", "Deleted"}
+	userCN             = "ggogos@iti.gr"
+	org1, org2         = randomOrgs()
+	randOrgs           = []string{org1, org2, "Fault Input"}
+	userID, _          = GenerateCertIdentity(`SomeMSP`, userCN, org1)
+	maliciousUserID, _ = GenerateCertIdentity(`SomeMSP`, userCN, randOrgs[2])
+	t                  = true
+	f                  = false
+	Object_Type        = []string{"Service", "Device", "Marketplace"}
+	Contract_Type      = []string{"Private", "Community"}
+	Contract_Status    = []string{"Pending", "Approved", "Deleted"}
 )
 
 var _ = Describe(`Chaincode`, func() {
@@ -51,11 +52,10 @@ var _ = Describe(`Chaincode`, func() {
 	})
 
 	Describe("Create", func() {
-
-		It("Allow authority to add information about contract", func() {
+		It("Contract creation, expected to be succeed", func() {
 			//invoke chaincode method from authority actor
 
-			expectcc.ResponseOk(cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
+			ccResponse := (cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
 				ContractId:     uuid.New().String(),
 				ContractType:   Contract_Type[rand.Intn(len(Contract_Type))],
 				ContractStatus: Contract_Status[rand.Intn(len(Contract_Status))],
@@ -65,7 +65,7 @@ var _ = Describe(`Chaincode`, func() {
 					Write:      &t,
 					ObjectId:   uuid.New().String(),
 					UnitId:     uuid.New().String(),
-					OrgId:      randOrgs[rand.Intn(len(randOrgs))],
+					OrgId:      randOrgs[rand.Intn(2)],
 					ObjectType: Object_Type[rand.Intn(len(Object_Type))],
 				},
 					{
@@ -73,11 +73,37 @@ var _ = Describe(`Chaincode`, func() {
 						Write:      &f,
 						ObjectId:   uuid.New().String(),
 						UnitId:     uuid.New().String(),
-						OrgId:      randOrgs[rand.Intn(len(randOrgs))],
+						OrgId:      randOrgs[rand.Intn(2)],
 						ObjectType: Object_Type[rand.Intn(len(Object_Type))],
 					}},
 			}))
+			expectcc.ResponseOk(ccResponse)
 
+		})
+		It("Contract Creation with acl error, expected to fail", func() {
+			ccResponse := (cc.From(maliciousUserID).Invoke(`CreateContract`, &payload.ContractPayload{
+				ContractId:     uuid.New().String(),
+				ContractType:   Contract_Type[rand.Intn(len(Contract_Type))],
+				ContractStatus: Contract_Status[rand.Intn(len(Contract_Status))],
+				Orgs:           []string{randOrgs[0], randOrgs[1]},
+				Items: []payload.Item{{
+					Enabled:    &t,
+					Write:      &t,
+					ObjectId:   uuid.New().String(),
+					UnitId:     uuid.New().String(),
+					OrgId:      randOrgs[rand.Intn(2)],
+					ObjectType: Object_Type[rand.Intn(len(Object_Type))],
+				},
+					{
+						Enabled:    &t,
+						Write:      &f,
+						ObjectId:   uuid.New().String(),
+						UnitId:     uuid.New().String(),
+						OrgId:      randOrgs[rand.Intn(2)],
+						ObjectType: Object_Type[rand.Intn(len(Object_Type))],
+					}},
+			}))
+			expectcc.ResponseError(ccResponse)
 		})
 
 	})

@@ -9,7 +9,7 @@ import (
 
 const ContractStateEntity = `ContractState`
 
-type ContractState struct {
+type contractState struct {
 	ContractId     string         `json:"contract_id"`
 	ContractType   string         `json:"contract_type"`
 	ContractStatus string         `json:"contract_status"`
@@ -19,12 +19,12 @@ type ContractState struct {
 	Created        string         `json:"created"`
 }
 
-func (s ContractState) Key() ([]string, error) {
+func (s contractState) Key() ([]string, error) {
 	return []string{ContractStateEntity, s.ContractId}, nil
 }
 
-func (s ContractState) String() string {
+func (s contractState) String() string {
 	marshaledItem, _ := json.Marshal(s.Items)
-	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s, LastUpdated=%s, Created=%s",
-		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, marshaledItem, s.LastUpdated, s.Created)
+	return fmt.Sprintf("ContractState (ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s, LastUpdated=%s, Created=%s)",
+		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, string(marshaledItem), s.LastUpdated, s.Created)
 }

@@ -14,7 +14,7 @@ type Item struct {
 }
 
 func (i Item) String() string {
-	return fmt.Sprintf("Enabled=%b, Write=%b, ObjectId=%s, UnitId=%s, OrgId=%s, ObjectType=%s)",
+	return fmt.Sprintf("Items (Enabled=%b, Write=%b, ObjectId=%s, UnitId=%s, OrgId=%s, ObjectType=%s)",
 		i.Enabled, i.Write, i.ObjectId, i.UnitId, i.OrgId, i.ObjectType)
 }
 

@@ -16,7 +16,7 @@ type ContractPayloadAllias ContractPayload
 
 func (p ContractPayload) String() string {
 	marshaledItem, _ := json.Marshal(p.Items)
-	return fmt.Sprintf("ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s",
+	return fmt.Sprintf("ContractPayload (ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s)",
 		p.ContractId, p.ContractType, p.ContractStatus, p.Orgs, string(marshaledItem))
 }
 

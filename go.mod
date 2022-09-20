@@ -9,7 +9,6 @@ require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.2
 	github.com/s7techlab/cckit v0.10.5
-	gopkg.in/guregu/null.v4 v4.0.0
 )
 
 require (

@@ -31,8 +31,12 @@ func CreateContract(c router.Context) (interface{}, error) {
 	}
 
 	logging.CCLoggerInstance.Printf("Checking ACL rules\n")
-	if owner := onlyContractOrgs(c); owner != string(contractPayload.Orgs[0]) && owner != string(contractPayload.Orgs[1]) {
-		retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL")
+	if owner, err := onlyContractOrgs(c); err != nil {
+		fmt.Print("Test2")
+		retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+		return nil, retErr
+	} else if owner != string(contractPayload.Orgs[0]) && owner != string(contractPayload.Orgs[1]) {
+		retErr := fmt.Errorf("The Org invoking the chaincode does not match the Orgs in payload")
 		return nil, retErr
 	}
 
@@ -42,6 +46,7 @@ func CreateContract(c router.Context) (interface{}, error) {
 		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 		return nil, retErr
 	}
+	logging.CCLoggerInstance.Printf("Successfully created a Contract between Orgs: %s, %s", contractPayload.Orgs[0], contractPayload.Orgs[1])
 
 	return nil, nil
 }
