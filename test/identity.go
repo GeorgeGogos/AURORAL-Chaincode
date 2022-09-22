@@ -7,8 +7,6 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
-	"encoding/asn1"
-	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"math/big"
@@ -21,6 +19,31 @@ import (
 var (
 	caPrivateKey *ecdsa.PrivateKey
 )
+
+type AttributeTest struct {
+	Name, Value string
+}
+
+func (a *AttributeTest) GetName() string {
+	return a.Name
+}
+
+func (a *AttributeTest) GetValue() string {
+	return a.Value
+}
+
+type AttributeRequestTest struct {
+	Name    string
+	Require bool
+}
+
+func (ar *AttributeRequestTest) GetName() string {
+	return ar.Name
+}
+
+func (ar *AttributeRequestTest) IsRequired() bool {
+	return ar.Require
+}
 
 func GenerateSelfSignedPEMCertBytes(commonName, orgID string) ([]byte, error) {
 	if caPrivateKey == nil {
@@ -52,15 +75,23 @@ func GenerateSelfSignedPEMCertBytes(commonName, orgID string) ([]byte, error) {
 
 	certificateTemplate.IPAddresses = append(certificateTemplate.IPAddresses, net.ParseIP("127.0.0.1"))
 	certificateTemplate.IsCA = false
-
 	//Inserting custom X509 Extension into cert
-	buf, _ := json.Marshal(map[string]string{"cid": orgID})
-	ext := pkix.Extension{
-		Id:       asn1.ObjectIdentifier{1, 2, 3, 4, 5, 6, 7, 8, 1},
-		Critical: false,
-		Value:    buf,
+	mgr := New()
+	attrs := []Attribute{
+		&AttributeTest{Name: "cid", Value: orgID},
 	}
-	certificateTemplate.ExtraExtensions = []pkix.Extension{ext}
+	reqs := []AttributeRequest{
+		&AttributeRequestTest{Name: "cid", Require: true},
+	}
+	err = mgr.ProcessAttributeRequestsForCert(reqs, attrs, &certificateTemplate)
+	if err != nil {
+		retErr := fmt.Errorf("Failed to ProcessAttributeRequestsForCert: %s", err)
+		return nil, retErr
+	}
+	//marshaledCert, _ := json.Marshal(certificateTemplate)
+	//fmt.Printf("CERT RAW IS: %s", string(marshaledCert))
+
+	//End of custom X509 Extension insertion
 
 	certificateDERBytes, err := x509.CreateCertificate(rand.Reader, &certificateTemplate,
 		&certificateTemplate, &caPrivateKey.PublicKey, caPrivateKey)
@@ -73,6 +104,7 @@ func GenerateSelfSignedPEMCertBytes(commonName, orgID string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error while PEM encoding X.509 digital certificate: %s", err.Error())
 	}
+	fmt.Print(string(certBuffer.Bytes()))
 	return certBuffer.Bytes(), nil
 }
 
@@ -81,6 +113,6 @@ func GenerateCertIdentity(mspID, commonName, orgID string) (*identity.CertIdenti
 	if err != nil {
 		return nil, err
 	}
-	fmt.Print(string(certPEMBytes))
+
 	return identity.New(mspID, certPEMBytes)
 }

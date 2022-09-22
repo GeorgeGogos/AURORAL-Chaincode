@@ -4,8 +4,10 @@ go 1.18
 
 require (
 	github.com/CERTH-ITI-DLT-Lab/hlf-cc-logging v1.0.0
+	github.com/golang/protobuf v1.5.2
 	github.com/google/uuid v1.3.0
-	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220720122508-9207360bbddd
+	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220920210243-7bc6fa0dd58b
+	github.com/hyperledger/fabric-protos-go v0.0.0-20220827195505-ce4c067a561d
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.20.2
 	github.com/s7techlab/cckit v0.10.5
@@ -14,11 +16,9 @@ require (
 require (
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
-	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	github.com/hyperledger/fabric v1.4.0-rc1.0.20200930182727-344fda602252 // indirect
 	github.com/hyperledger/fabric-amcl v0.0.0-20200128223036-d1aa2665426a // indirect
-	github.com/hyperledger/fabric-protos-go v0.0.0-20220613214546-bf864f01d75e // indirect
 	github.com/miekg/pkcs11 v1.0.3 // indirect
 	github.com/mwitkow/go-proto-validators v0.3.2 // indirect
 	github.com/nxadm/tail v1.4.8 // indirect
