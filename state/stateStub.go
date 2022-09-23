@@ -24,10 +24,10 @@ func (s StateStub) NewContract(payload payload.ContractPayload) error {
 		retErr := fmt.Errorf("Error retrieving Transaction's Proposal Time: %s", err.Error())
 		return retErr
 	} else {
-		contract_State := &contractState{
+		contract_State := &ContractState{
 			ContractId:     payload.ContractId,
 			ContractType:   payload.ContractType,
-			ContractStatus: payload.ContractStatus,
+			ContractStatus: "Pending",
 			Orgs:           payload.Orgs,
 			Items:          payload.Items,
 			LastUpdated:    txTime.UTC().Format(time.RFC3339),

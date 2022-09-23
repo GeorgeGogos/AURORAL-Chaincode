@@ -28,6 +28,5 @@ func onlyContractOrgs(c router.Context) (string, error) {
 		fmt.Printf("Attribute from cert is: %+v", string(marshaledAttr))
 		return string(cid), nil
 	}
-	return "", nil
 
 }

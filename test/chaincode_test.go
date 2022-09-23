@@ -38,7 +38,7 @@ var (
 	f                  = false
 	Object_Type        = []string{"Service", "Device", "Marketplace"}
 	Contract_Type      = []string{"Private", "Community"}
-	Contract_Status    = []string{"Pending", "Approved", "Deleted"}
+	Contract_Status    = []string{"Pending", "Accepted", "Rejected"}
 )
 
 var _ = Describe(`Chaincode`, func() {
@@ -55,11 +55,10 @@ var _ = Describe(`Chaincode`, func() {
 		It("Contract creation, expected to be succeed", func() {
 			//invoke chaincode method from authority actor
 
-			ccResponse := (cc.From(userID).Invoke(`CreateContract`, &payload.ContractPayload{
-				ContractId:     uuid.New().String(),
-				ContractType:   Contract_Type[rand.Intn(len(Contract_Type))],
-				ContractStatus: Contract_Status[rand.Intn(len(Contract_Status))],
-				Orgs:           []string{randOrgs[0], randOrgs[1]},
+			ccResponse := (cc.From(userID).Invoke(`ProposeContract`, &payload.ContractPayload{
+				ContractId:   "drtg54v45t45",
+				ContractType: Contract_Type[rand.Intn(len(Contract_Type))],
+				Orgs:         []string{randOrgs[0], randOrgs[1]},
 				Items: []payload.Item{{
 					Enabled:    &t,
 					Write:      &t,
@@ -81,11 +80,10 @@ var _ = Describe(`Chaincode`, func() {
 
 		})
 		It("Contract Creation with acl error, expected to fail", func() {
-			ccResponse := (cc.From(maliciousUserID).Invoke(`CreateContract`, &payload.ContractPayload{
-				ContractId:     uuid.New().String(),
-				ContractType:   Contract_Type[rand.Intn(len(Contract_Type))],
-				ContractStatus: Contract_Status[rand.Intn(len(Contract_Status))],
-				Orgs:           []string{randOrgs[0], randOrgs[1]},
+			ccResponse := (cc.From(maliciousUserID).Invoke(`ProposeContract`, &payload.ContractPayload{
+				ContractId:   uuid.New().String(),
+				ContractType: Contract_Type[rand.Intn(len(Contract_Type))],
+				Orgs:         []string{randOrgs[0], randOrgs[1]},
 				Items: []payload.Item{{
 					Enabled:    &t,
 					Write:      &t,
@@ -104,6 +102,12 @@ var _ = Describe(`Chaincode`, func() {
 					}},
 			}))
 			expectcc.ResponseError(ccResponse)
+		})
+
+		It("AcceptContract from Org not invoking the Contract proposal, expected to succeed", func() {
+			testID := "drtg54v45t45"
+			ccResponse := (cc.From(userID).Invoke(`AcceptContract`, testID))
+			expectcc.ResponseOk(ccResponse)
 		})
 
 	})
