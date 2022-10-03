@@ -46,7 +46,6 @@ func ProposeContract(c router.Context) (interface{}, error) {
 		return nil, retErr
 	}
 	logging.CCLoggerInstance.Printf("Successfully created a Contract between Orgs: %s, %s", contractPayload.Orgs[0], contractPayload.Orgs[1])
-
 	return nil, nil
 }
 
@@ -54,17 +53,80 @@ func AcceptContract(c router.Context) (interface{}, error) {
 	contractID := c.ParamString("contract_ID")
 	logging.CCLoggerInstance.Printf("Received input: %s. Attempting to validate contract request...\n", contractID)
 
-	if stateContract, err := c.State().Get(state.ContractState{ContractId: contractID}); err != nil {
+	if stateContract, err := c.State().Get(state.ContractState{ContractId: contractID}, &state.ContractState{}); err != nil {
 
 		retErr := fmt.Errorf("The requested Contract does not exists: %s", err.Error())
-		fmt.Printf("Type of stateContract: %#v\n", stateContract)
-		return nil, retErr
-	} /*else if stateContract.ContractStatus == "Rejected" || stateContract.ContractStatus == "Accepted" {
-		retErr := fmt.Errorf("Error in Contract payload: %s", err.Error())
 		return nil, retErr
 	} else {
-		stateContract.ContractStatus = "Accepted"
-	}*/
+		fmt.Printf("Data of stateContract: %s\n", stateContract)
+		acceptedContract := stateContract.(state.ContractState)
+		if acceptedContract.ContractStatus == "Rejected" || acceptedContract.ContractStatus == "Accepted" {
+			retErr := fmt.Errorf("Error in Contract payload: %s", err.Error())
+			return nil, retErr
+		} else {
+			acceptedContract.ContractStatus = "Accepted"
+			fmt.Printf("Data of acceptedContract: %s\n", acceptedContract)
+			if err := c.State().Put(acceptedContract); err != nil {
+				retErr := fmt.Errorf("Error: Put() returned error: %s", err.Error())
+				return nil, retErr
+			}
+
+		}
+
+	}
+
+	return nil, nil
+}
+
+func RejectContract(c router.Context) (interface{}, error) {
+	contractID := c.ParamString("contract_ID")
+	logging.CCLoggerInstance.Printf("Received input: %s. Attempting to validate contract request...\n", contractID)
+
+	if stateContract, err := c.State().Get(state.ContractState{ContractId: contractID}, &state.ContractState{}); err != nil {
+
+		retErr := fmt.Errorf("The requested Contract does not exists: %s", err.Error())
+		return nil, retErr
+	} else {
+		fmt.Printf("Data of stateContract: %s\n", stateContract)
+		rejectedContract := stateContract.(state.ContractState)
+		if rejectedContract.ContractStatus == "Rejected" || rejectedContract.ContractStatus == "Accepted" {
+			retErr := fmt.Errorf("Error in Contract payload: %s", err.Error())
+			return nil, retErr
+		} else {
+			rejectedContract.ContractStatus = "Rejected"
+			fmt.Printf("Data of rejectedContract: %s\n", rejectedContract)
+			if err := c.State().Put(rejectedContract); err != nil {
+				retErr := fmt.Errorf("Error: Put() returned error: %s", err.Error())
+				return nil, retErr
+			}
+
+		}
+
+	}
+
+	return nil, nil
+}
+
+func DeleteContract(c router.Context) (interface{}, error) {
+	contractID := c.ParamString("contract_ID")
+	beforeDeletion, _ := c.State().Get(state.ContractState{ContractId: contractID}, &state.ContractState{})
+	fmt.Printf("Data before deletion: %s\n", beforeDeletion)
+
+	if exists, err := c.State().Exists(state.ContractState{ContractId: contractID}); err != nil {
+		retErr := fmt.Errorf("Error: Exists() returned error: %s", err.Error())
+		return nil, retErr
+	} else if !exists {
+		retErr := fmt.Errorf("Error: Invalid delete operation, contract with ID: %s does not exist in contract state", contractID)
+		return nil, retErr
+	}
+
+	if err := c.State().Delete(&state.ContractState{ContractId: contractID}); err != nil {
+		retErr := fmt.Errorf("Error: Delete() returned error: %s", err.Error())
+		return nil, retErr
+
+	}
+	afterDeletion, _ := c.State().Get(state.ContractState{ContractId: contractID}, &state.ContractState{})
+	fmt.Printf("Data after deletion: %s\n", afterDeletion)
 
 	return nil, nil
 }

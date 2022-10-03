@@ -104,9 +104,43 @@ var _ = Describe(`Chaincode`, func() {
 			expectcc.ResponseError(ccResponse)
 		})
 
-		It("AcceptContract from Org not invoking the Contract proposal, expected to succeed", func() {
+		It("AcceptContract from Org included in Contract, expected to succeed", func() {
 			testID := "drtg54v45t45"
 			ccResponse := (cc.From(userID).Invoke(`AcceptContract`, testID))
+			expectcc.ResponseOk(ccResponse)
+		})
+
+		It("RejectContract from Org included in Contract, expected to succeed", func() {
+			ccResponse := (cc.From(userID).Invoke(`ProposeContract`, &payload.ContractPayload{
+				ContractId:   "dftyrtbhv",
+				ContractType: Contract_Type[rand.Intn(len(Contract_Type))],
+				Orgs:         []string{randOrgs[0], randOrgs[1]},
+				Items: []payload.Item{{
+					Enabled:    &t,
+					Write:      &t,
+					ObjectId:   uuid.New().String(),
+					UnitId:     uuid.New().String(),
+					OrgId:      randOrgs[rand.Intn(2)],
+					ObjectType: Object_Type[rand.Intn(len(Object_Type))],
+				},
+					{
+						Enabled:    &t,
+						Write:      &f,
+						ObjectId:   uuid.New().String(),
+						UnitId:     uuid.New().String(),
+						OrgId:      randOrgs[rand.Intn(2)],
+						ObjectType: Object_Type[rand.Intn(len(Object_Type))],
+					}},
+			}))
+			expectcc.ResponseOk(ccResponse)
+			testID := "dftyrtbhv"
+			ccResponse = (cc.From(userID).Invoke(`RejectContract`, testID))
+			expectcc.ResponseOk(ccResponse)
+		})
+
+		It("DeleteContract from Org included in Contract, expected to succeed", func() {
+			testID := "drtg54v45t45"
+			ccResponse := (cc.From(userID).Invoke(`DeleteContract`, testID))
 			expectcc.ResponseOk(ccResponse)
 		})
 
