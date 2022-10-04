@@ -31,9 +31,10 @@ func NewCC() *router.Chaincode {
 		Invoke(`ProposeContract`, chaincode.ProposeContract, param.Struct("contractPayload", &payload.ContractPayload{})).
 		Invoke(`AcceptContract`, chaincode.AcceptContract, param.String("contract_ID")).
 		Invoke(`RejectContract`, chaincode.RejectContract, param.String("contract_ID")).
-		Invoke(`DeleteContract`, chaincode.DeleteContract, param.String("contract_ID"))
-
-		//Invoke(`Deletevalue`, Deletevalue, param.String(ParamKey))
+		Invoke(`DissolveContract`, chaincode.DissolveContract, param.String("contract_ID")).
+		Query(`GetContractByID`, chaincode.GetContractByID, param.String("contract_ID")).
+		Query(`GetContracts`, chaincode.GetContracts).
+		Query(`GetContractIDs`, chaincode.GetContractIDs)
 
 	return router.NewChaincode(r)
 

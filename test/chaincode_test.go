@@ -56,7 +56,7 @@ var _ = Describe(`Chaincode`, func() {
 			//invoke chaincode method from authority actor
 
 			ccResponse := (cc.From(userID).Invoke(`ProposeContract`, &payload.ContractPayload{
-				ContractId:   "drtg54v45t45",
+				ContractId:   "ID-01",
 				ContractType: Contract_Type[rand.Intn(len(Contract_Type))],
 				Orgs:         []string{randOrgs[0], randOrgs[1]},
 				Items: []payload.Item{{
@@ -105,14 +105,8 @@ var _ = Describe(`Chaincode`, func() {
 		})
 
 		It("AcceptContract from Org included in Contract, expected to succeed", func() {
-			testID := "drtg54v45t45"
-			ccResponse := (cc.From(userID).Invoke(`AcceptContract`, testID))
-			expectcc.ResponseOk(ccResponse)
-		})
-
-		It("RejectContract from Org included in Contract, expected to succeed", func() {
 			ccResponse := (cc.From(userID).Invoke(`ProposeContract`, &payload.ContractPayload{
-				ContractId:   "dftyrtbhv",
+				ContractId:   "ID-02",
 				ContractType: Contract_Type[rand.Intn(len(Contract_Type))],
 				Orgs:         []string{randOrgs[0], randOrgs[1]},
 				Items: []payload.Item{{
@@ -133,14 +127,55 @@ var _ = Describe(`Chaincode`, func() {
 					}},
 			}))
 			expectcc.ResponseOk(ccResponse)
-			testID := "dftyrtbhv"
+			testID := "ID-02"
+			ccResponse = (cc.From(userID).Invoke(`AcceptContract`, testID))
+			expectcc.ResponseOk(ccResponse)
+		})
+
+		It("RejectContract from Org included in Contract, expected to succeed", func() {
+			ccResponse := (cc.From(userID).Invoke(`ProposeContract`, &payload.ContractPayload{
+				ContractId:   "ID-03",
+				ContractType: Contract_Type[rand.Intn(len(Contract_Type))],
+				Orgs:         []string{randOrgs[0], randOrgs[1]},
+				Items: []payload.Item{{
+					Enabled:    &t,
+					Write:      &t,
+					ObjectId:   uuid.New().String(),
+					UnitId:     uuid.New().String(),
+					OrgId:      randOrgs[rand.Intn(2)],
+					ObjectType: Object_Type[rand.Intn(len(Object_Type))],
+				},
+					{
+						Enabled:    &t,
+						Write:      &f,
+						ObjectId:   uuid.New().String(),
+						UnitId:     uuid.New().String(),
+						OrgId:      randOrgs[rand.Intn(2)],
+						ObjectType: Object_Type[rand.Intn(len(Object_Type))],
+					}},
+			}))
+			expectcc.ResponseOk(ccResponse)
+			testID := "ID-03"
 			ccResponse = (cc.From(userID).Invoke(`RejectContract`, testID))
 			expectcc.ResponseOk(ccResponse)
 		})
 
 		It("DeleteContract from Org included in Contract, expected to succeed", func() {
-			testID := "drtg54v45t45"
-			ccResponse := (cc.From(userID).Invoke(`DeleteContract`, testID))
+			testID := "ID-01"
+			ccResponse := (cc.From(userID).Invoke(`DissolveContract`, testID))
+			expectcc.ResponseOk(ccResponse)
+		})
+		It("GetContractByID from Org included in Contract, expected to succeed", func() {
+			testID := "ID-02"
+			ccResponse := (cc.From(userID).Query(`GetContractByID`, testID))
+			expectcc.ResponseOk(ccResponse)
+		})
+		It("GetContractIDs from Org included in Contract, expected to succeed", func() {
+			ccResponse := (cc.From(userID).Query(`GetContractIDs`))
+			expectcc.ResponseOk(ccResponse)
+		})
+		It("GetContracts from Org included in Contract, expected to succeed", func() {
+			ccResponse := (cc.From(userID).Query(`GetContracts`))
 			expectcc.ResponseOk(ccResponse)
 		})
 
