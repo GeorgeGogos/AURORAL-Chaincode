@@ -111,7 +111,7 @@ var _ = Describe(`Chaincode`, func() {
 				Orgs:         []string{randOrgs[0], randOrgs[1]},
 				Items: []payload.Item{{
 					Enabled:    &t,
-					Write:      &t,
+					Write:      &f,
 					ObjectId:   uuid.New().String(),
 					UnitId:     uuid.New().String(),
 					OrgId:      randOrgs[rand.Intn(2)],
@@ -119,11 +119,11 @@ var _ = Describe(`Chaincode`, func() {
 				},
 					{
 						Enabled:    &t,
-						Write:      &f,
-						ObjectId:   uuid.New().String(),
-						UnitId:     uuid.New().String(),
-						OrgId:      randOrgs[rand.Intn(2)],
-						ObjectType: Object_Type[rand.Intn(len(Object_Type))],
+						Write:      &t,
+						ObjectId:   "uuid.New().String()",
+						UnitId:     "uuid.New().String()",
+						OrgId:      org1,
+						ObjectType: "Device",
 					}},
 			}))
 			expectcc.ResponseOk(ccResponse)
@@ -176,6 +176,18 @@ var _ = Describe(`Chaincode`, func() {
 		})
 		It("GetContracts from Org included in Contract, expected to succeed", func() {
 			ccResponse := (cc.From(userID).Query(`GetContracts`))
+			expectcc.ResponseOk(ccResponse)
+		})
+		It("UpdateContractItem from Org included in Contract, expected to succeed", func() {
+			testID := "ID-02"
+			ccResponse := (cc.From(userID).Invoke(`UpdateContractItem`, testID, &payload.Item{
+				Enabled:    &t,
+				Write:      &f,
+				ObjectId:   "uuid.New().String()",
+				UnitId:     "uuid.New().String()",
+				OrgId:      org1,
+				ObjectType: "Device",
+			}))
 			expectcc.ResponseOk(ccResponse)
 		})
 
