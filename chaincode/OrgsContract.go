@@ -320,11 +320,12 @@ func UpdateContractItem(c router.Context) (interface{}, error) {
 			return nil, retErr
 		} else {
 			itemFound := false
-			for _, curQueriedObj := range stateItemsArray {
+			for i, curQueriedObj := range stateItemsArray {
 				if curQueriedObj.ObjectId == itemPayload.ObjectId && curQueriedObj.UnitId == itemPayload.UnitId && curQueriedObj.OrgId == itemPayload.OrgId && curQueriedObj.ObjectType == itemPayload.ObjectType {
 					itemFound = true
 					curQueriedObj.Enabled = itemPayload.Enabled
 					curQueriedObj.Write = itemPayload.Write
+					stateItemsArray[i] = curQueriedObj
 				}
 			}
 			if !itemFound {

@@ -181,7 +181,7 @@ var _ = Describe(`Chaincode`, func() {
 		It("UpdateContractItem from Org included in Contract, expected to succeed", func() {
 			testID := "ID-02"
 			ccResponse := (cc.From(userID).Invoke(`UpdateContractItem`, testID, &payload.Item{
-				Enabled:    &t,
+				Enabled:    &f,
 				Write:      &f,
 				ObjectId:   "uuid.New().String()",
 				UnitId:     "uuid.New().String()",
