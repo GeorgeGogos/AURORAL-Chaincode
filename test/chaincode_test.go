@@ -124,6 +124,14 @@ var _ = Describe(`Chaincode`, func() {
 						UnitId:     "uuid.New().String()",
 						OrgId:      org1,
 						ObjectType: "Device",
+					},
+					{
+						Enabled:    &f,
+						Write:      &t,
+						ObjectId:   uuid.New().String(),
+						UnitId:     uuid.New().String(),
+						OrgId:      org2,
+						ObjectType: "Device",
 					}},
 			}))
 			expectcc.ResponseOk(ccResponse)
@@ -187,6 +195,23 @@ var _ = Describe(`Chaincode`, func() {
 				UnitId:     "uuid.New().String()",
 				OrgId:      org1,
 				ObjectType: "Device",
+			}))
+			expectcc.ResponseOk(ccResponse)
+		})
+		It("DeleteContractItem from Org included in Contract, expected to succeed", func() {
+			testID := "ID-02"
+			ccResponse := (cc.From(userID).Invoke(`DeleteContractItem`, testID, "uuid.New().String()"))
+			expectcc.ResponseOk(ccResponse)
+		})
+		It("AddContractItem from Org included in Contract, expected to succeed", func() {
+			testID := "ID-02"
+			ccResponse := (cc.From(userID).Invoke(`AddContractItem`, testID, &payload.Item{
+				Enabled:    &f,
+				Write:      &f,
+				ObjectId:   uuid.New().String(),
+				UnitId:     uuid.New().String(),
+				OrgId:      org1,
+				ObjectType: "Service",
 			}))
 			expectcc.ResponseOk(ccResponse)
 		})

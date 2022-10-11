@@ -35,7 +35,9 @@ func NewCC() *router.Chaincode {
 		Query(`GetContractByID`, chaincode.GetContractByID, param.String("contract_ID")).
 		Query(`GetContracts`, chaincode.GetContracts).
 		Query(`GetContractIDs`, chaincode.GetContractIDs).
-		Invoke(`UpdateContractItem`, chaincode.UpdateContractItem, param.String("contract_ID"), param.Struct("itemPayload", &payload.Item{}))
+		Invoke(`UpdateContractItem`, chaincode.UpdateContractItem, param.String("contract_ID"), param.Struct("itemPayload", &payload.Item{})).
+		Invoke(`DeleteContractItem`, chaincode.DeleteContractItem, param.String("contract_ID"), param.String("item_ID")).
+		Invoke(`AddContractItem`, chaincode.AddContractItem, param.String("contract_ID"), param.Struct("itemPayload", &payload.Item{}))
 
 	return router.NewChaincode(r)
 

@@ -274,16 +274,143 @@ func UpdateContractItem(c router.Context) (interface{}, error) {
 	contractID := c.ParamString("contract_ID")
 	itemPayload := c.Param("itemPayload").(payload.Item) // Assert the chaincode parameter
 
-	logging.CCLoggerInstance.Printf("Checking ACL rules\n")
-	if owner, err := onlyContractOrgs(c); err != nil {
-		retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+	logging.CCLoggerInstance.Printf("Checking Contract Exists()\n")
+	if exists, err := c.State().Exists(state.ContractState{ContractId: contractID}); err != nil {
+		retErr := fmt.Errorf("Error: Exists() returned error: %s", err.Error())
+		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 		return nil, retErr
-	} else if owner != string(itemPayload.OrgId) {
-		retErr := fmt.Errorf("The Org invoking the chaincode does not match the Orgs in payload")
+	} else if !exists {
+		retErr := fmt.Errorf("Error: Invalid delete operation, contract with ID: %s does not exist in contract state", contractID)
 		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 		return nil, retErr
 	}
 
+	if stateContract, err := c.State().Get(state.ContractState{ContractId: contractID}, &state.ContractState{}); err != nil {
+		retErr := fmt.Errorf("The requested Contract does not exist: %s", err.Error())
+		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+		return nil, retErr
+	} else {
+		stateContractStruct := stateContract.(state.ContractState)
+		stateToPayloadStruct := payload.ContractPayload{
+			ContractId:   stateContractStruct.ContractId,
+			ContractType: stateContractStruct.ContractType,
+			Orgs:         stateContractStruct.Orgs,
+			Items:        stateContractStruct.Items,
+		}
+		logging.CCLoggerInstance.Printf("Checking ACL rules\n")
+		if owner, err := onlyContractOrgs(c); err != nil {
+			retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+			return nil, retErr
+		} else if owner != string(itemPayload.OrgId) {
+			retErr := fmt.Errorf("The Org invoking the chaincode does not match the Item's Org")
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		}
+		logging.CCLoggerInstance.Printf("Received input: %s. Attempting to validate contract request...\n", itemPayload.String())
+		if err := itemPayload.Validate(stateToPayloadStruct); err != nil {
+			retErr := fmt.Errorf("Error: Validate() returned error: %s", err.Error())
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		}
+		logging.CCLoggerInstance.Printf("Checking Items array length\n")
+		if len(stateContractStruct.Items) == 0 {
+			retErr := fmt.Errorf("The requested Contract does not include any Items")
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		} else {
+			itemFound := false
+			for i, curQueriedObj := range stateContractStruct.Items {
+				if curQueriedObj.ObjectId == itemPayload.ObjectId && curQueriedObj.UnitId == itemPayload.UnitId && curQueriedObj.OrgId == itemPayload.OrgId && curQueriedObj.ObjectType == itemPayload.ObjectType {
+					itemFound = true
+					curQueriedObj.Enabled = itemPayload.Enabled
+					curQueriedObj.Write = itemPayload.Write
+					stateContractStruct.Items[i] = curQueriedObj
+				}
+			}
+			if !itemFound {
+				retErr := fmt.Errorf("The requested Contract does not include the requested Item")
+				logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+				return nil, retErr
+			} else {
+				if err := c.State().Put(stateContractStruct); err != nil {
+					retErr := fmt.Errorf("Error: Put() returned error: %s", err.Error())
+					return nil, retErr
+				}
+				fmt.Printf("Updated Contract: %s\n", &stateContractStruct)
+				return stateContractStruct, nil
+			}
+		}
+	}
+}
+
+func DeleteContractItem(c router.Context) (interface{}, error) {
+	contractID := c.ParamString("contract_ID")
+	itemID := c.ParamString("item_ID")
+
+	logging.CCLoggerInstance.Printf("Checking Contract Exists()\n")
+	if exists, err := c.State().Exists(state.ContractState{ContractId: contractID}); err != nil {
+		retErr := fmt.Errorf("Error: Exists() returned error: %s", err.Error())
+		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+		return nil, retErr
+	} else if !exists {
+		retErr := fmt.Errorf("Error: Invalid delete operation, contract with ID: %s does not exist in contract state", contractID)
+		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+		return nil, retErr
+	}
+
+	if stateContract, err := c.State().Get(state.ContractState{ContractId: contractID}, &state.ContractState{}); err != nil {
+		retErr := fmt.Errorf("The requested Contract does not exist: %s", err.Error())
+		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+		return nil, retErr
+	} else {
+		stateContractStruct := stateContract.(state.ContractState)
+
+		logging.CCLoggerInstance.Printf("Checking Items array length\n")
+		if len(stateContractStruct.Items) == 0 {
+			retErr := fmt.Errorf("The requested Contract does not include any Items")
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		} else {
+			itemFound := false
+			for i, curQueriedObj := range stateContractStruct.Items {
+				if curQueriedObj.ObjectId == itemID {
+					itemFound = true
+					logging.CCLoggerInstance.Printf("Checking ACL rules\n")
+					if owner, err := onlyContractOrgs(c); err != nil {
+						retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+						return nil, retErr
+					} else if owner != string(curQueriedObj.OrgId) {
+						retErr := fmt.Errorf("The Org invoking the chaincode does not match the Item's Org")
+						logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+						return nil, retErr
+					}
+					stateContractStruct.Items[i] = stateContractStruct.Items[len(stateContractStruct.Items)-1]
+					stateContractStruct.Items[len(stateContractStruct.Items)-1] = payload.Item{}
+					stateContractStruct.Items = stateContractStruct.Items[0 : len(stateContractStruct.Items)-1]
+					break
+				}
+			}
+			if !itemFound {
+				retErr := fmt.Errorf("The requested Contract does not include the requested Item")
+				logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+				return nil, retErr
+			} else {
+				if err := c.State().Put(stateContractStruct); err != nil {
+					retErr := fmt.Errorf("Error: Put() returned error: %s", err.Error())
+					return nil, retErr
+				}
+				fmt.Printf("Updated Contract: %s\n", &stateContractStruct)
+				return stateContractStruct, nil
+			}
+		}
+	}
+}
+
+func AddContractItem(c router.Context) (interface{}, error) {
+	contractID := c.ParamString("contract_ID")
+	itemPayload := c.Param("itemPayload").(payload.Item) // Assert the chaincode parameter
+
+	logging.CCLoggerInstance.Printf("Checking Contract Exists()\n")
 	if exists, err := c.State().Exists(state.ContractState{ContractId: contractID}); err != nil {
 		retErr := fmt.Errorf("Error: Exists() returned error: %s", err.Error())
 		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
@@ -307,32 +434,39 @@ func UpdateContractItem(c router.Context) (interface{}, error) {
 			Orgs:         stateContractStruct.Orgs,
 			Items:        stateContractStruct.Items,
 		}
-
+		logging.CCLoggerInstance.Printf("Checking ACL rules\n")
+		if owner, err := onlyContractOrgs(c); err != nil {
+			retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+			return nil, retErr
+		} else if owner != string(itemPayload.OrgId) {
+			retErr := fmt.Errorf("The Org invoking the chaincode does not match the Item's Org")
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		}
 		logging.CCLoggerInstance.Printf("Received input: %s. Attempting to validate contract request...\n", itemPayload.String())
 		if err := itemPayload.Validate(stateToPayloadStruct); err != nil {
 			retErr := fmt.Errorf("Error: Validate() returned error: %s", err.Error())
 			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 			return nil, retErr
 		}
+		logging.CCLoggerInstance.Printf("Checking Items array length\n")
 		if len(stateItemsArray) == 0 {
 			retErr := fmt.Errorf("The requested Contract does not include any Items")
 			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 			return nil, retErr
 		} else {
 			itemFound := false
-			for i, curQueriedObj := range stateItemsArray {
-				if curQueriedObj.ObjectId == itemPayload.ObjectId && curQueriedObj.UnitId == itemPayload.UnitId && curQueriedObj.OrgId == itemPayload.OrgId && curQueriedObj.ObjectType == itemPayload.ObjectType {
+			for _, curQueriedObj := range stateItemsArray {
+				if curQueriedObj.ObjectId == itemPayload.ObjectId {
 					itemFound = true
-					curQueriedObj.Enabled = itemPayload.Enabled
-					curQueriedObj.Write = itemPayload.Write
-					stateItemsArray[i] = curQueriedObj
 				}
 			}
-			if !itemFound {
-				retErr := fmt.Errorf("The requested Contract does not include the requested Item")
+			if itemFound {
+				retErr := fmt.Errorf("The requested Item is already included into the Contract")
 				logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 				return nil, retErr
 			} else {
+				stateContractStruct.Items = append(stateContractStruct.Items, itemPayload)
 				if err := c.State().Put(stateContractStruct); err != nil {
 					retErr := fmt.Errorf("Error: Put() returned error: %s", err.Error())
 					return nil, retErr
