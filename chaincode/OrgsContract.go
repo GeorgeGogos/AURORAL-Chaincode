@@ -64,8 +64,18 @@ func AcceptContract(c router.Context) (interface{}, error) {
 	} else {
 		fmt.Printf("Data of stateContract: %s\n", stateContract)
 		acceptedContract := stateContract.(state.ContractState)
+
+		logging.CCLoggerInstance.Printf("Checking ACL rules\n")
+		if owner, err := onlyContractOrgs(c); err != nil {
+			retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+			return nil, retErr
+		} else if owner != string(acceptedContract.Orgs[0]) && owner != string(acceptedContract.Orgs[1]) {
+			retErr := fmt.Errorf("The Org invoking the chaincode does not match the Orgs in payload")
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		}
 		if acceptedContract.ContractStatus == "Rejected" || acceptedContract.ContractStatus == "Accepted" {
-			retErr := fmt.Errorf("Error in Contract payload: %s", err.Error())
+			retErr := fmt.Errorf("Error in Contract payload.Contract Status is not 'Pending'.")
 			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 			return nil, retErr
 		} else {
@@ -96,8 +106,19 @@ func RejectContract(c router.Context) (interface{}, error) {
 	} else {
 		fmt.Printf("Data of stateContract: %s\n", stateContract)
 		rejectedContract := stateContract.(state.ContractState)
+
+		logging.CCLoggerInstance.Printf("Checking ACL rules\n")
+		if owner, err := onlyContractOrgs(c); err != nil {
+			retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+			return nil, retErr
+		} else if owner != string(rejectedContract.Orgs[0]) && owner != string(rejectedContract.Orgs[1]) {
+			retErr := fmt.Errorf("The Org invoking the chaincode does not match the Orgs in payload")
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		}
+
 		if rejectedContract.ContractStatus == "Rejected" || rejectedContract.ContractStatus == "Accepted" {
-			retErr := fmt.Errorf("Error in Contract payload: %s", err.Error())
+			retErr := fmt.Errorf("Error in Contract payload. Contract Status is not 'Pending'.")
 			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 			return nil, retErr
 		} else {
@@ -118,8 +139,6 @@ func RejectContract(c router.Context) (interface{}, error) {
 
 func DissolveContract(c router.Context) (interface{}, error) {
 	contractID := c.ParamString("contract_ID")
-	beforeDeletion, _ := c.State().List([]string{state.ContractStateEntity}, &state.ContractState{})
-	fmt.Printf("Data before deletion: %s\n", beforeDeletion)
 
 	if exists, err := c.State().Exists(state.ContractState{ContractId: contractID}); err != nil {
 		retErr := fmt.Errorf("Error: Exists() returned error: %s", err.Error())
@@ -129,6 +148,19 @@ func DissolveContract(c router.Context) (interface{}, error) {
 		retErr := fmt.Errorf("Error: Invalid delete operation, contract with ID: %s does not exist in contract state", contractID)
 		logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 		return nil, retErr
+	} else {
+		stateContract, _ := c.State().Get(state.ContractState{ContractId: contractID}, &state.ContractState{})
+		deletedContract := stateContract.(state.ContractState)
+
+		logging.CCLoggerInstance.Printf("Checking ACL rules\n")
+		if owner, err := onlyContractOrgs(c); err != nil {
+			retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
+			return nil, retErr
+		} else if owner != string(deletedContract.Orgs[0]) && owner != string(deletedContract.Orgs[1]) {
+			retErr := fmt.Errorf("The Org invoking the chaincode does not match the Orgs in payload")
+			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
+			return nil, retErr
+		}
 	}
 
 	if err := c.State().Delete(&state.ContractState{ContractId: contractID}); err != nil {
@@ -137,8 +169,6 @@ func DissolveContract(c router.Context) (interface{}, error) {
 		return nil, retErr
 
 	}
-	afterDeletion, _ := c.State().List([]string{state.ContractStateEntity}, &state.ContractState{})
-	fmt.Printf("Data after deletion: %s\n", afterDeletion)
 
 	return nil, nil
 }
@@ -195,11 +225,6 @@ func GetContracts(c router.Context) (interface{}, error) {
 		} else {
 
 			queriedInterfaceArray := querylist.([]interface{})
-			if len(queriedInterfaceArray) == 0 {
-				emptyResultArray := make([]state.ContractState, 0)
-				logging.CCLoggerInstance.Printf("Query successfully completed! Returning output: %v\n", emptyResultArray)
-				return emptyResultArray, nil
-			}
 			var outputList []state.ContractState
 			for _, curQueriedObj := range queriedInterfaceArray {
 				stateContractStruct := curQueriedObj.(state.ContractState)
@@ -239,11 +264,6 @@ func GetContractIDs(c router.Context) (interface{}, error) {
 		} else {
 
 			queriedInterfaceArray := querylist.([]interface{})
-			if len(queriedInterfaceArray) == 0 {
-				emptyResultArray := make([]state.ContractState, 0)
-				logging.CCLoggerInstance.Printf("Query successfully completed! Returning output: %v\n", emptyResultArray)
-				return emptyResultArray, nil
-			}
 			var outputList []string
 			for _, curQueriedObj := range queriedInterfaceArray {
 				stateContractStruct := curQueriedObj.(state.ContractState)
@@ -301,7 +321,7 @@ func UpdateContractItem(c router.Context) (interface{}, error) {
 		if owner, err := onlyContractOrgs(c); err != nil {
 			retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
 			return nil, retErr
-		} else if owner != string(itemPayload.OrgId) {
+		} else if owner != string(itemPayload.OrgId) || stateContractStruct.ContractStatus != "Accepted" {
 			retErr := fmt.Errorf("The Org invoking the chaincode does not match the Item's Org")
 			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 			return nil, retErr
@@ -379,7 +399,7 @@ func DeleteContractItem(c router.Context) (interface{}, error) {
 					if owner, err := onlyContractOrgs(c); err != nil {
 						retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
 						return nil, retErr
-					} else if owner != string(curQueriedObj.OrgId) {
+					} else if owner != string(curQueriedObj.OrgId) || stateContractStruct.ContractStatus != "Accepted" {
 						retErr := fmt.Errorf("The Org invoking the chaincode does not match the Item's Org")
 						logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 						return nil, retErr
@@ -438,7 +458,7 @@ func AddContractItem(c router.Context) (interface{}, error) {
 		if owner, err := onlyContractOrgs(c); err != nil {
 			retErr := fmt.Errorf("The user invoking the Contract does not belong in the ACL: %s", err.Error())
 			return nil, retErr
-		} else if owner != string(itemPayload.OrgId) {
+		} else if owner != string(itemPayload.OrgId) || stateContractStruct.ContractStatus != "Accepted" {
 			retErr := fmt.Errorf("The Org invoking the chaincode does not match the Item's Org")
 			logging.CCLoggerInstance.Printf("%s\n", retErr.Error())
 			return nil, retErr
