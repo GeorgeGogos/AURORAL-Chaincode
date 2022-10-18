@@ -9,7 +9,7 @@ require (
 	github.com/hyperledger/fabric-chaincode-go v0.0.0-20220920210243-7bc6fa0dd58b
 	github.com/hyperledger/fabric-protos-go v0.0.0-20220827195505-ce4c067a561d
 	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.20.2
+	github.com/onsi/gomega v1.22.1
 	github.com/s7techlab/cckit v0.10.5
 )
 

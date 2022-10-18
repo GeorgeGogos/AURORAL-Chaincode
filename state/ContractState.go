@@ -10,6 +10,7 @@ import (
 const ContractStateEntity = `ContractState`
 
 type ContractState struct {
+	InvokingOrg    string         `json:"invoking_org"`
 	ContractId     string         `json:"contract_id"`
 	ContractType   string         `json:"contract_type"`
 	ContractStatus string         `json:"contract_status"`
@@ -25,6 +26,6 @@ func (s ContractState) Key() ([]string, error) {
 
 func (s ContractState) String() string {
 	marshaledItem, _ := json.Marshal(s.Items)
-	return fmt.Sprintf("ContractState (ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s, LastUpdated=%s, Created=%s)",
-		s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, string(marshaledItem), s.LastUpdated, s.Created)
+	return fmt.Sprintf("ContractState (InvokingOrg=%s, ContractId=%s, ContractType=%s, ContractStatus=%s, Orgs=%s, Items=%s, LastUpdated=%s, Created=%s)",
+		s.InvokingOrg, s.ContractId, s.ContractType, s.ContractStatus, s.Orgs, string(marshaledItem), s.LastUpdated, s.Created)
 }

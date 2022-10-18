@@ -7,6 +7,8 @@ import (
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/asn1"
+	"encoding/json"
 	"encoding/pem"
 	"fmt"
 	"math/big"
@@ -20,29 +22,8 @@ var (
 	caPrivateKey *ecdsa.PrivateKey
 )
 
-type AttributeTest struct {
-	Name, Value string
-}
-
-func (a *AttributeTest) GetName() string {
-	return a.Name
-}
-
-func (a *AttributeTest) GetValue() string {
-	return a.Value
-}
-
-type AttributeRequestTest struct {
-	Name    string
-	Require bool
-}
-
-func (ar *AttributeRequestTest) GetName() string {
-	return ar.Name
-}
-
-func (ar *AttributeRequestTest) IsRequired() bool {
-	return ar.Require
+type Attributes struct {
+	Attrs map[string]string `json:"attrs"`
 }
 
 func GenerateSelfSignedPEMCertBytes(commonName, orgID string) ([]byte, error) {
@@ -53,6 +34,23 @@ func GenerateSelfSignedPEMCertBytes(commonName, orgID string) ([]byte, error) {
 		}
 		caPrivateKey = priv
 	}
+
+	//Create custom Attribute
+	AttrOID := asn1.ObjectIdentifier{1, 2, 3, 4, 5, 6, 7, 8, 1}
+	attrmap := map[string]string{"cid": orgID}
+	attrs := &Attributes{
+		Attrs: attrmap,
+	}
+	buf, err := json.Marshal(attrs)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal attributes: %s", err)
+	}
+	ext := pkix.Extension{
+		Id:       AttrOID,
+		Critical: false,
+		Value:    buf,
+	}
+
 	keyUsage := x509.KeyUsageDigitalSignature
 	notBefore := time.Now()
 	validFor := 150000 * time.Second
@@ -65,34 +63,18 @@ func GenerateSelfSignedPEMCertBytes(commonName, orgID string) ([]byte, error) {
 			Organization: []string{"Acme Co"},
 			CommonName:   commonName,
 		},
-		NotBefore: notBefore,
-		NotAfter:  notAfter,
-
+		NotBefore:             notBefore,
+		NotAfter:              notAfter,
 		KeyUsage:              keyUsage,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
 		BasicConstraintsValid: true,
 	}
 
+	//Insert custom Attribute into Certificate
+	certificateTemplate.ExtraExtensions = append(certificateTemplate.ExtraExtensions, ext)
+
 	certificateTemplate.IPAddresses = append(certificateTemplate.IPAddresses, net.ParseIP("127.0.0.1"))
 	certificateTemplate.IsCA = false
-	//Inserting custom X509 Extension into cert
-	mgr := New()
-	attrs := []Attribute{
-		&AttributeTest{Name: "cid", Value: orgID},
-	}
-	reqs := []AttributeRequest{
-		&AttributeRequestTest{Name: "cid", Require: true},
-	}
-	err = mgr.ProcessAttributeRequestsForCert(reqs, attrs, &certificateTemplate)
-	if err != nil {
-		retErr := fmt.Errorf("Failed to ProcessAttributeRequestsForCert: %s", err)
-		return nil, retErr
-	}
-	//marshaledCert, _ := json.Marshal(certificateTemplate)
-	//fmt.Printf("CERT RAW IS: %s", string(marshaledCert))
-
-	//End of custom X509 Extension insertion
-
 	certificateDERBytes, err := x509.CreateCertificate(rand.Reader, &certificateTemplate,
 		&certificateTemplate, &caPrivateKey.PublicKey, caPrivateKey)
 	if err != nil {

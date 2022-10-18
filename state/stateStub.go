@@ -19,12 +19,14 @@ func NewStateStub(c router.Context) *StateStub {
 	}
 }
 
-func (s StateStub) NewContract(payload payload.ContractPayload) error {
+func (s StateStub) NewContract(payload payload.ContractPayload, owner string) error {
 	if txTime, err := s.context.Time(); err != nil {
 		retErr := fmt.Errorf("Error retrieving Transaction's Proposal Time: %s", err.Error())
 		return retErr
 	} else {
+
 		contract_State := &ContractState{
+			InvokingOrg:    owner,
 			ContractId:     payload.ContractId,
 			ContractType:   payload.ContractType,
 			ContractStatus: "Pending",

@@ -1,15 +1,12 @@
 package chaincode
 
 import (
-	"encoding/json"
 	"fmt"
-
-	"github.com/hyperledger/fabric-chaincode-go/pkg/attrmgr"
 
 	"github.com/s7techlab/cckit/router"
 )
 
-func onlyContractOrgs(c router.Context) (string, error) {
+/*func onlyContractOrgs(c router.Context) (string, error) {
 	if client, err := c.Client(); err != nil {
 		retErr := fmt.Errorf("Error: Cannot retrieve Client: %s", err.Error())
 		return "", retErr
@@ -29,4 +26,20 @@ func onlyContractOrgs(c router.Context) (string, error) {
 		return string(cid), nil
 	}
 
+}*/
+
+func OnlyContractOrgs(c router.Context) (string, error) {
+	client, err := c.Client()
+	if err != nil {
+		return "", err
+	}
+	attrValue, found, err := client.GetAttributeValue("cid")
+	if err != nil {
+		return "", err
+	}
+	if !found {
+		return "", fmt.Errorf("cid attribute not found in client's identity")
+	}
+	fmt.Printf("Attribute from cert is: %s\n", attrValue)
+	return attrValue, nil
 }
